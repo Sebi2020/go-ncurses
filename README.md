@@ -1,4 +1,6 @@
 # go-ncurses
+[![GoDoc](https://godoc.org/github.com/Sebi2020/go-ncurses?status.svg)](https://godoc.org/github.com/Sebi2020/go-ncurses)
+
 **go-ncurses** is a wrapper for [go](https://www.golang.org) of the famous ncurses library.
 
 ```go
