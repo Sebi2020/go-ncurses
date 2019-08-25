@@ -1,0 +1,44 @@
+// Licensed under the GPL-v3
+// Copyright: Sebastian Tilders <info@informatikonline.net> (c) 2019
+
+#include <ncurses.h>
+#include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+
+void del_window(WINDOW *win) {
+    wbkgd(win,COLOR_PAIR(0));
+    wclear(win);
+    wrefresh(win);
+    delwin(win);
+}
+void quit() {
+    mvaddstr(0,0,"end");    
+    refresh();
+    endwin();
+    exit(0);
+}
+
+void* bind_get_stdscr() {
+    return stdscr;
+}
+
+void bind_set_locale() {
+    setlocale(LC_ALL,"");
+}
+void bind_get_maxyx(WINDOW *win, int *y, int *x) {
+    getmaxyx(win,*y,*x);
+}
+
+void bind_waddstr(WINDOW *win, char* str) {
+    waddstr(win,str);
+    free(str);
+}
+
+void bind_color_set(short pair) {
+    color_set(pair,0);
+}
+
+void bind_wbkgd(WINDOW *win, short pairId) {
+    wbkgd(win,COLOR_PAIR(pairId));
+}
