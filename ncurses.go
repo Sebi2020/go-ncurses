@@ -4,8 +4,7 @@
 /*
   Provides an API binding for the TUI-Library libncurses.
   The binding is designed to be used in multithreaded environments and therefore uses
-  an command channel to communicate with the ncurses library. Go-Routines make sure  
-  to call endwin() if the program is interrupted (killed) by the user (SIGINT).
+  an command channel to communicate with the ncurses library.
  */
 package ncurses
 
