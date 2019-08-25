@@ -14,7 +14,7 @@ import (
 )
 
 // Command channel ensures Thread safety
-var comChan chan Command = make(chan Command)
+var comChan chan Command = make(chan Command,4)
 
 // Name of a ncurses command
 type CommandName uint8
