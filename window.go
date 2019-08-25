@@ -42,6 +42,7 @@ type Window struct {
 
 // Creates a new window. Make sure the windows do not overlap.
 //    Notice: Fields for position and Size are swapped. The first parameter sets the column count, not the line count.
+// TODO(sebi2020): Add DelWindow method
 func NewWindow(name string, begin Position, end Size) (*Window, error) {
     if !initialized {
         return nil,errors.New("Ncurses is not initialized")
