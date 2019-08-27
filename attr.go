@@ -9,27 +9,26 @@ import (
 	// "fmt"
 )
 type Attribute int
-
 const (
 	// Normal text
-	AttrNormal Attribute = C.A_NORMAL
+	AttrNormal      Attribute = C.A_NORMAL
 	// Hightlighted text
-	AttrHighlighted = C.A_STANDOUT
+	AttrHighlighted Attribute = C.A_STANDOUT
 	// Underlined text
-	AttrUnderline = C.A_UNDERLINE
-	AttrReversed = C.A_REVERSE
+	AttrUnderline   Attribute = C.A_UNDERLINE
+	AttrReversed    Attribute = C.A_REVERSE
 	// Blinking text
-	AttrBlink = C.A_BLINK
+	AttrBlink       Attribute = C.A_BLINK
 	// Dimmed text
-	AttrDim = C.A_DIM
+	AttrDim         Attribute = C.A_DIM
 	// Bold text
-	AttrBold = C.A_BOLD
+	AttrBold        Attribute = C.A_BOLD
 	// Protected text
-	AttrProtect = C.A_PROTECT
+	AttrProtect     Attribute = C.A_PROTECT
 	// Hidden text
-	AttrInvisible = C.A_INVIS
+	AttrInvisible   Attribute = C.A_INVIS
 	// Alternative Charset
-	AttrAltcharset = C.A_ALTCHARSET
+	AttrAltcharset  Attribute = C.A_ALTCHARSET
 )
 
 // Sets char attributes for following output in Window w.
