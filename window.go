@@ -78,6 +78,13 @@ func (s Size) String() string {
     return fmt.Sprintf("<%d, %d>", s.Y,s.X)
 }
 
+func (w *Window) sendCommand(c Command, refresh bool) {
+    GetComChannel() <-c
+    if refresh {
+        w.Refresh()
+    }
+}
+
 // Retrieves the terminal height and width (gathered through Terminfo & Termcap DB)
 func(w *Window) GetMaxYX() (Size,error) {
     if !initialized {
@@ -120,13 +127,6 @@ func (w *Window) Refresh() {
         Scope:LOCAL,
     }
     w.sendCommand(com,false)
-}
-
-func (w *Window) sendCommand(c Command, refresh bool) {
-    GetComChannel() <-c
-    if refresh {
-        w.Refresh()
-    }
 }
 
 // Implements the Writer interface.

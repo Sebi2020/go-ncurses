@@ -11,6 +11,7 @@ import (
     "C"
     "fmt"
     "os"
+    "runtime"
 )
 
 // Command channel ensures Thread safety
@@ -42,6 +43,7 @@ const (
     SCROLL                  // Scrolls current window
     SETCOLOR                // Sets the color for text and background
     WBKGD                   // Sets fg and bg of entire window
+    ATTRSET                 // Sets font attributes for follwing output
     START_TA                // UNIMPL(sebi2020) Initiates a transaction
     END_TA                  // UNIMPL(sebi2020) Finalizes a transaction
 )
@@ -69,6 +71,8 @@ func (cn CommandName) String() string {
             return "SETCOLOR"
         case WBKGD:
             return "WBKGD"
+        case ATTRSET:
+            return "ATTRSET"
         default:
             return fmt.Sprintf("Unkown (%x)",int(cn))
     }
@@ -127,6 +131,8 @@ func (com Command) execute () {
             C.bind_color_set(C.short(com.Value.(pairId)))
         case WBKGD:
             C.bind_wbkgd(handle,C.short(com.Value.(pairId)))
+        case ATTRSET:
+            C.wattrset(handle,C.int(com.Value.(int)))
         default:
             panic(fmt.Sprintf("Command %s not implemented",com))
     }
@@ -140,6 +146,7 @@ func recoverFromPanic() {
     }
 }
 func processCommands() {
+    runtime.LockOSThread()
     defer recoverFromPanic()
     for com := range comChan {
         com.execute()
