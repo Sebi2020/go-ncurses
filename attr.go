@@ -23,6 +23,7 @@ const (
 	AttrDim         Attribute = C.A_DIM
 	// Bold text
 	AttrBold        Attribute = C.A_BOLD
+	AttrItalic      Attribute = C.A_ITALIC
 	// Protected text
 	AttrProtect     Attribute = C.A_PROTECT
 	// Hidden text
