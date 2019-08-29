@@ -12,6 +12,7 @@ import (
     "fmt"
     "os"
     "runtime"
+    "unsafe"
 )
 
 // Command channel ensures Thread safety
@@ -44,6 +45,7 @@ const (
     SETCOLOR                // Sets the color for text and background
     WBKGD                   // Sets fg and bg of entire window
     ATTRSET                 // Sets font attributes for follwing output
+    READSTR                 // Reads a string up to the defined buffer size
     START_TA                // UNIMPL(sebi2020) Initiates a transaction
     END_TA                  // UNIMPL(sebi2020) Finalizes a transaction
 )
@@ -133,6 +135,15 @@ func (com Command) execute () {
             C.bind_wbkgd(handle,C.short(com.Value.(pairId)))
         case ATTRSET:
             C.wattrset(handle,C.int(com.Value.(int)))
+        case READSTR:
+            str := (*C.char)(nil)
+            l := C.bind_wgetnstr(C.int(iBufSize),&str)
+            gostr := C.GoBytes(unsafe.Pointer(str),l)
+            com.Value.(*readTuple).n = int(l)
+            C.free(unsafe.Pointer(str))
+
+            com.Value.(*readTuple).ret <- gostr
+
         default:
             panic(fmt.Sprintf("Command %s not implemented",com))
     }

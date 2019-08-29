@@ -38,6 +38,7 @@ type Window struct {
     cursor Position
     // Set to true, if you want to automatically refresh the window after it recieved a command
     AutoRefresh bool
+    inputBuffer []byte
 }
 
 // Creates a new window. Make sure the windows do not overlap.
