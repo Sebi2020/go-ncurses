@@ -41,7 +41,7 @@ type Window struct {
     inputBuffer []byte
     // Controls maximum character count for reads. This controls the n parameter of ncurses wgetnstr function.
     //
-    // See: http://manpages.org/getstr/3http://manpages.org/getstr/3
+    // See: http://manpages.org/getstr/3
     IBufSize int
 }
 
