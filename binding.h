@@ -10,4 +10,4 @@ void* bind_get_stdscr();
 void bind_set_locale();
 void bind_color_set(short pair);
 void bind_wbkgd(WINDOW *win, short pairId);
-int bind_wgetnstr(int max, char** str);
+int bind_wgetnstr(WINDOW *win, int max, char** str);

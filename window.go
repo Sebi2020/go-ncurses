@@ -39,6 +39,10 @@ type Window struct {
     // Set to true, if you want to automatically refresh the window after it recieved a command
     AutoRefresh bool
     inputBuffer []byte
+    // Controls maximum character count for reads. This controls the n parameter of ncurses wgetnstr function.
+    //
+    // See: http://manpages.org/getstr/3http://manpages.org/getstr/3
+    IBufSize int
 }
 
 // Creates a new window. Make sure the windows do not overlap.
@@ -57,6 +61,7 @@ func NewWindow(name string, begin Position, end Size) (*Window, error) {
         max:end,
         cursor:Position{0,0},
         AutoRefresh:false,
+        IBufSize:255,
     }
     w.chandle = unsafe.Pointer(C.newwin(C.int(end.Y),C.int(end.X),C.int(begin.Y),C.int(begin.X)))   
     C.syncok(winst(w.chandle),true)

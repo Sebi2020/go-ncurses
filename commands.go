@@ -137,7 +137,7 @@ func (com Command) execute () {
             C.wattrset(handle,C.int(com.Value.(int)))
         case READSTR:
             str := (*C.char)(nil)
-            l := C.bind_wgetnstr(C.int(iBufSize),&str)
+            l := C.bind_wgetnstr(handle,C.int(com.Window.IBufSize),&str)
             gostr := C.GoBytes(unsafe.Pointer(str),l)
             com.Value.(*readTuple).n = int(l)
             C.free(unsafe.Pointer(str))

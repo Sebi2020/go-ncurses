@@ -43,9 +43,9 @@ void bind_wbkgd(WINDOW *win, short pairId) {
     wbkgd(win,COLOR_PAIR(pairId));
 }
 
-int bind_wgetnstr(int max, char** str) {
+int bind_wgetnstr(WINDOW *win, int max, char** str) {
     char* buf = calloc(1,max);
-    getnstr(buf,max);
+    wgetnstr(win,buf,max);
     *str = buf;
     return (int) strlen(buf);
 }
