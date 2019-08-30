@@ -46,6 +46,7 @@ func Initscr() (*Window,error) {
         chandle:    C.bind_get_stdscr(),
         begin:      Position{0,0},
         AutoRefresh: false,
+        AutoCursor: false,
         IBufSize: 255,
     }
     C.keypad((*C.struct__win_st)(w.chandle),true)

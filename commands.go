@@ -75,6 +75,8 @@ func (cn CommandName) String() string {
             return "WBKGD"
         case ATTRSET:
             return "ATTRSET"
+        case READSTR:
+            return "READSTR"
         default:
             return fmt.Sprintf("Unkown (%x)",int(cn))
     }

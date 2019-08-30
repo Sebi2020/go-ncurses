@@ -15,6 +15,9 @@ type readTuple struct {
 
 // Implements the io.Reader interface
 func (w *Window) Read(p []byte) (int,error) {
+	if w.AutoCursor {
+		SetCursor(CURSOR_VISIBLE)
+	}
 	if (w.inputBuffer == nil) {
 		res := &readTuple{
 			ret: make(chan []byte),
@@ -35,6 +38,9 @@ func (w *Window) Read(p []byte) (int,error) {
 		w.inputBuffer = w.inputBuffer[n:]
 		return n,nil
 	} else {
+		if w.AutoCursor {
+			SetCursor(CURSOR_HIDDEN)
+		}
 		w.inputBuffer = nil
 		return n,io.EOF
 	}

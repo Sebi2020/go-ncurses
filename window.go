@@ -38,6 +38,7 @@ type Window struct {
     cursor Position
     // Set to true, if you want to automatically refresh the window after it recieved a command
     AutoRefresh bool
+    AutoCursor bool
     inputBuffer []byte
     // Controls maximum character count for reads. This controls the n parameter of ncurses wgetnstr function.
     //
