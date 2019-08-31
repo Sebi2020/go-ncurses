@@ -7,18 +7,18 @@
 
 + **Thread Safety** (e.g. Go-Routine safety)
   
-  It's safe to run operations on different window from different go-routines
+  It's safe to run operations on different windows from different go-routines
 + **Auto-Refresh** on output
 
   You can enable ***Auto-Refresh***, which takes care about window refreshes after writes.
 + **Auto-Cursor** on input
 
-  Automatically enables the input cursor on input if enabled
+  Automatically shows and hides the input cursor on input if enabled
 
-+ Formatted output(bold, italic, underlined and reversed)
++ **Formatted output** (bold, italic, underlined and reversed)
 
   go-ncurses implemented a Writer allowing text-formatting:
-  
+
   **Example**:
   ```go
   w,_ = ncurses.Initscr()
