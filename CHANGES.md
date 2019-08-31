@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 + Attribute support
 + Basic color support
 + Box-Decoration (Border around windows)
++ Format-Writer
 
+   allowing the user to format (bold,italic,underlined...) console output without the need to use SetAttribute.
 
 [Unreleased]: https://github.com/sebi2020/go-ncurses/compare/2b00a28e650b7cf2ee9a2fec8c3a94f8e0badb59...HEAD
