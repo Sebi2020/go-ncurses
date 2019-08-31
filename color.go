@@ -39,6 +39,13 @@ func StartColor() error {
 	C.assume_default_colors(-1,-1)
 	pairs["std"] = pairId(0)
 	C.start_color()
+	if C.can_change_color() {
+		InitColor("blk",CustomColor{Red:0,Green:0,Blue:0})
+		InitColor("w",CustomColor{Red:999,Green:999,Blue:999})
+		InitColor("r",CustomColor{Red:999,Green:0,Blue:0})
+		InitColor("g",CustomColor{Red:0,Green:999,Blue:0})
+		InitColor("b",CustomColor{Red:0,Green:0,Blue:999})
+	}
 	return nil
 }
 
@@ -79,4 +86,42 @@ func (w *Window) Wbkgd(pairName string) error {
 		Value:val,
 	},w.AutoRefresh)
 	return nil
+}
+
+type CustomColor struct {
+	Red uint16
+	Green uint16
+	Blue uint16
+	colorId uint16
+}
+
+var numColors uint16 = 0
+var customColors map[string]CustomColor = make(map[string]CustomColor)
+
+func InitColor(name string, c CustomColor) error {
+	if !initialized {
+		return errors.New("ncurses it not initalized")
+	}
+	if !C.can_change_color() {
+		return errors.New("Terminal does not support custom colors")
+	}
+	if c.Red > 999 || c.Green > 999 || c.Blue > 999 || c.Red < 0 || c.Green < 0 || c.Blue < 0 {
+		return errors.New("Color values must be in range of 0-999")
+	}
+	if C.int(numColors) >= C.COLORS {
+		return errors.New("Maximum number of custom colors reached")
+	}
+	c.colorId = numColors
+	C.init_color(C.short(c.colorId), C.short(c.Red), C.short(c.Green),C.short(c.Blue))
+	customColors[name] = c
+	numColors++
+	return nil
+}
+
+func GetColor(name string) Color {
+	val,ok := customColors[name]
+	if !ok {
+		panic("Colors does not exists!")
+	}
+	return Color(val.colorId)
 }

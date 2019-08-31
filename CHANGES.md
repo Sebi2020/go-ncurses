@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 + Attribute support
 + Basic color support
 + Box-Decoration (Border around windows)
++ Custom Color support
 + Format-Writer
 
    allowing the user to format (bold,italic,underlined...) console output without the need to use SetAttribute.
