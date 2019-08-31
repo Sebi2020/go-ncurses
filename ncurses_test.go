@@ -90,6 +90,20 @@ func ExampleInitscr_dontDoThis() {
 		// do some things
 }
 
+func ExampleNewFormatWriter() {
+  w,_ := Initscr();
+  defer Endwin()
+  wf := ncurses.NewFormatWriter(w)
+  fmt.Fprintf(wf,"This is *%s*, -%s-, _%s_, ~%s~, ~*-%s-*~ and __%s__",
+    "bold",
+    "italic",
+    "underlined",
+    "reversed",
+    "bold, italic and reversed",
+    "escaped")
+    // Output: This is bold, italic, underlined, reversed, bold, italic and reversed, _escaped_
+}
+
 func ExampleAddColorPair() {
 	w,_ := Initscr()
 	defer Endwin()

@@ -33,14 +33,14 @@ func (w *Window) Read(p []byte) (int,error) {
 	}
 	
 	n := copy(p,w.inputBuffer)
+	if w.AutoCursor {
+			SetCursor(CURSOR_HIDDEN)
+	}
 
 	if(n > 0) {
 		w.inputBuffer = w.inputBuffer[n:]
 		return n,nil
 	} else {
-		if w.AutoCursor {
-			SetCursor(CURSOR_HIDDEN)
-		}
 		w.inputBuffer = nil
 		return n,io.EOF
 	}

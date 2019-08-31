@@ -114,9 +114,9 @@ var modMapping map[rune] Attribute = map[rune] Attribute{
 
 type attrOp struct {
 	Attr Attribute
-	Offset int
 	Add bool
 }
+
 func initOpenStates(m modList) map[rune]bool {
 	open := make(map[rune]bool)
 	for _,v := range m {
@@ -125,12 +125,12 @@ func initOpenStates(m modList) map[rune]bool {
 	return open
 }
 
-func ParseFormatStr(s string) (string,[]attrOp) {
+func ParseFormatStr(s string) []interface{} {
 	STATE := A_STATE_CHAR
 	output := make([]rune,0,255)
 	input := ([]rune)(s)
-	ops := make([]attrOp,0,10)
-	Iidx,Oidx := 0,0
+	ops := make([]interface{},0,8)
+	Iidx := 0
 	open := initOpenStates(modifiers)
 
 	for Iidx < len(input) {
@@ -141,7 +141,6 @@ func ParseFormatStr(s string) (string,[]attrOp) {
 					STATE = A_STATE_MODIFIER
 				} else {
 					output = append(output,v)
-					Oidx++
 				}
 				Iidx++
 			case A_STATE_MODIFIER:
@@ -151,9 +150,10 @@ func ParseFormatStr(s string) (string,[]attrOp) {
 					STATE = A_STATE_FORMAT_FLAG
 				}
 			case A_STATE_FORMAT_FLAG:
+				ops = append(ops,string(output))
+				output = make([]rune,0,255)
 				ops = append(ops,attrOp{
 					Attr: modMapping[input[Iidx-1]],
-					Offset: Oidx,
 					Add: open[input[Iidx-1]],
 				})
 				open[input[Iidx-1]] = !open[input[Iidx-1]]
@@ -161,11 +161,11 @@ func ParseFormatStr(s string) (string,[]attrOp) {
 			case A_STATE_ESCAPE:
 				output = append(output,v)
 				Iidx++
-				Oidx++
 				STATE = A_STATE_CHAR
 		}
 	}
-	return string(output),ops
+	ops = append(ops,string(output))
+	return ops
 }
 
 func (aw *AttributeWriter) Write([] byte) (int,error) {
@@ -173,4 +173,51 @@ func (aw *AttributeWriter) Write([] byte) (int,error) {
 		return 0,errors.New("ncurses is not initialized!")
 	}
 	return 0,io.EOF
+}
+
+// Allows you to use go-ncurses formats to format output.
+//
+// Format specifiers
+//
+// go-ncurses formats support the following specifiers:
+//    *text*: Bold font
+//    ~text~: Reversed (colored) font
+//    -text-: Italic font
+//    _text_: Underlined text
+//
+// Escaping
+//
+// Double a format specifier to escape it.
+//
+type FormatWriter Window
+
+
+// Returns a pointer to a new FormatWriter
+func NewFormatWriter(w *Window) *FormatWriter {
+	return (*FormatWriter)(w)
+}
+
+// Implements the io.Writer interface
+func(fw *FormatWriter) Write(p []byte) (int,error) {
+	ops := ParseFormatStr(string(p))
+	attr := AttrNormal
+	cSum := 0
+	for _,v := range ops {
+		switch t := v.(type) {
+		case string:
+			n,err := (*Window)(fw).Write([]byte(v.(string)))
+			cSum += n
+			if err != nil {
+				return cSum,err
+			}
+		case attrOp:
+			if t.Add {
+				attr |= t.Attr
+			} else {
+				attr &= ^t.Attr
+			}
+			(*Window)(fw).SetAttribute(attr)
+		}
+	}
+	return cSum,nil
 }
