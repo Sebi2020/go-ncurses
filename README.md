@@ -18,6 +18,7 @@
 + Formatted output(bold, italic, underlined and reversed)
 
   go-ncurses implemented a Writer allowing text-formatting:
+  
   **Example**:
   ```go
   w,_ = ncurses.Initscr()
@@ -26,7 +27,7 @@
   wf := ncurses.NewFormatWriter(w)
   fmt.Fprintf(wf,"-Hello *World*-!")
   ```
-  **Output**: *Hello **World***!
+  `Output`: *Hello **World***!
 
 ## Example
 ```go
