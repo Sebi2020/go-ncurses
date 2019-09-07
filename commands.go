@@ -7,7 +7,8 @@ package ncurses
 import (
     // #cgo LDFLAGS: -lncursesw
     // #include <binding.h>
-    // #include <curses.h>
+    // #include <ncurses.h>
+    // #include <panel.h>
     "C"
     "fmt"
     "os"
@@ -16,13 +17,15 @@ import (
 )
 
 // Command channel ensures Thread safety
-var comChan chan Command = make(chan Command,4)
+var comChan chan Command = make(chan Command)
 
 // Name of a ncurses command
 type CommandName uint8
 
 // Data of a ncurses command
 type CommandValue interface{}
+
+var CN int = 0
 
 // Scope of Command
 type CommandScope int
@@ -40,12 +43,17 @@ const (
     DELETE                  // Delete string at current cursor locatio
     REFRESH                 // Flush buffer to video memory
     CLEAR                   // Clear the entire window
+    ERASE
     SCROLLOK                // Enables scrolling
     SCROLL                  // Scrolls current window
     SETCOLOR                // Sets the color for text and background
     WBKGD                   // Sets fg and bg of entire window
     ATTRSET                 // Sets font attributes for follwing output
     READSTR                 // Reads a string up to the defined buffer size
+    GETCH                   // Reads a char
+    DRAWBOX                 // Draws a box around window
+    PANELUP                 // Moves panel along z-axis
+    PANELDOWN               // Moves panel along z-axis
     START_TA                // UNIMPL(sebi2020) Initiates a transaction
     END_TA                  // UNIMPL(sebi2020) Finalizes a transaction
 )
@@ -77,8 +85,16 @@ func (cn CommandName) String() string {
             return "ATTRSET"
         case READSTR:
             return "READSTR"
+        case DRAWBOX:
+            return "DRAWBOX"
+        case GETCH:
+            return "GETCH"
+        case PANELUP:
+            return "PANELUP"
+        case PANELDOWN:
+            return "PANELDOWN"
         default:
-            return fmt.Sprintf("Unkown (%x)",int(cn))
+            return fmt.Sprintf("Unkown (0x%x)",int(cn))
     }
 }
 
@@ -106,6 +122,7 @@ func GetComChannel() chan<- Command {
 
 func (com Command) execute () {
     var handle winst
+    CN++
     if com.Scope != GLOBAL {
         if com.Window == nil {
             panic(fmt.Sprintf("No Context for command %s", com))
@@ -132,7 +149,7 @@ func (com Command) execute () {
         case SCROLL:
             C.wscrl(handle,C.int(com.Value.(int)))
         case SETCOLOR:
-            C.bind_color_set(C.short(com.Value.(pairId)))
+            C.bind_color_set(handle,C.short(com.Value.(pairId)))
         case WBKGD:
             C.bind_wbkgd(handle,C.short(com.Value.(pairId)))
         case ATTRSET:
@@ -145,7 +162,17 @@ func (com Command) execute () {
             C.free(unsafe.Pointer(str))
 
             com.Value.(*readTuple).ret <- gostr
-
+        case DRAWBOX:
+            C.box(handle,0,0)
+        case GETCH:
+            ret := C.wgetch((*C.struct__win_st)(handle));
+            com.Value.(chan rune) <- rune(ret)
+        case ERASE:
+            C.werase(handle)
+        case PANELUP:
+            C.top_panel((*C.struct_panel)(com.Value.(Panel).handle))
+        case PANELDOWN:
+            C.bottom_panel((*C.struct_panel)(com.Value.(Panel).handle))
         default:
             panic(fmt.Sprintf("Command %s not implemented",com))
     }
@@ -163,5 +190,6 @@ func processCommands() {
     defer recoverFromPanic()
     for com := range comChan {
         com.execute()
+        CN++
     }
 }

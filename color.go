@@ -4,7 +4,7 @@
 package ncurses
 
 import (
-	// #include <curses.h>
+	// #include <ncurses.h>
 	"C"
 	"errors"
 	"fmt"
@@ -29,6 +29,14 @@ const (
     ColorMagenta
     ColorCyan
     ColorWhite
+    ColorBrightBlack
+    ColorBrightRed
+    ColorBrightGreen
+    ColorBrightYellow
+    ColorBrightBlue
+    ColorBrightMagenta
+    ColorBrightCyan
+    ColorBrightWhite
 )
 
 // Changes terminal to color mode. If the terminal does not support colors. StartColor returns an error.
@@ -36,22 +44,17 @@ func StartColor() error {
 	if !C.has_colors() {
 		return errors.New("Terminal does not support colors")
 	}
-	C.assume_default_colors(-1,-1)
-	pairs["std"] = pairId(0)
 	C.start_color()
 	if C.can_change_color() {
 		InitColor("blk",CustomColor{Red:0,Green:0,Blue:0})
-		InitColor("w",CustomColor{Red:999,Green:999,Blue:999})
-		InitColor("r",CustomColor{Red:999,Green:0,Blue:0})
-		InitColor("g",CustomColor{Red:0,Green:999,Blue:0})
-		InitColor("b",CustomColor{Red:0,Green:0,Blue:999})
 	}
+	pairs["std"] = pairId(-1)
 	return nil
 }
 
 // Adds a new pair of colors, which can be used to manipulate the color of terminal outputs.
 // Choose one color of type Color.
-func AddColorPair(name string, fg,bg Color) {
+func InitPair(name string, fg,bg Color) {
 	pairs[name] = pairId(numPairs)
 	C.init_pair(C.short(numPairs),C.short(fg),C.short(bg))
 	numPairs++
@@ -60,17 +63,24 @@ func AddColorPair(name string, fg,bg Color) {
 // Selects a font foreground/background color pair. Every write uses the new color pair.
 //
 // Use AddColorPair to create ncurses Color-Pairs. There is one default color-pair which defaults to the terminal color-set for foreground and background.
-func SetColor(name string) error {
+
+func (w *Window) SetColor(name string) error {
 	val, ok := pairs[name]
 	if !ok {
 		return fmt.Errorf("Color \"%s\"pair does not exist!",name)
 	}
+	w.lastColor = name
 	GetComChannel() <- Command{
 		Name: SETCOLOR,
-		Scope:GLOBAL,
+		Scope:LOCAL,
+		Window: w,
 		Value:val,
 	}
 	return nil
+}
+
+func (w *Window) GetLastColor() string {
+	return w.lastColor
 }
 
 // Changes foreground/background color-pair of the associated window.
@@ -95,7 +105,7 @@ type CustomColor struct {
 	colorId uint16
 }
 
-var numColors uint16 = 0
+var numColors uint16 = 16
 var customColors map[string]CustomColor = make(map[string]CustomColor)
 
 func InitColor(name string, c CustomColor) error {
@@ -121,7 +131,7 @@ func InitColor(name string, c CustomColor) error {
 func GetColor(name string) Color {
 	val,ok := customColors[name]
 	if !ok {
-		panic("Colors does not exists!")
+		panic(fmt.Sprintf("Color '%s' does not exists!",name))
 	}
 	return Color(val.colorId)
 }

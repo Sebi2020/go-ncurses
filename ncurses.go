@@ -11,7 +11,7 @@ package ncurses
 import (
     // #cgo LDFLAGS: -lncursesw
     // #include <binding.h>
-    // #include <curses.h>
+    // #include <ncurses.h>
     // #include <locale.h>
     "C"
     "errors"
@@ -47,8 +47,11 @@ func Initscr() (*Window,error) {
         begin:      Position{0,0},
         AutoRefresh: false,
         AutoCursor: false,
+        AutoEcho: false,
+        lastColor: "std",
         IBufSize: 255,
     }
+    C.cbreak()
     C.keypad((*C.struct__win_st)(w.chandle),true)
     C.move(0,0)
     initialized = true
@@ -105,4 +108,8 @@ func SetCursor(choice CursorVisibility) error {
     }
     C.curs_set(C.int(choice))
     return nil
+}
+
+func (w *Window) WaitForKey(k rune) {
+    for w.Getch() != k {}
 }

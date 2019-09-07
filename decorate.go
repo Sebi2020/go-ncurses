@@ -10,5 +10,10 @@ import (
 
 // Draws a border around w *Window.
 func (w *Window) Box() {
-    C.box(winst(w.chandle),0,0)
+    com := Command{
+    	Name: DRAWBOX,
+    	Scope: LOCAL,
+    	Window: w,
+    }
+    w.sendCommand(com,true)
 }

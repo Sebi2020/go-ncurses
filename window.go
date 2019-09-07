@@ -6,7 +6,7 @@ package ncurses
 import (
     // #cgo LDFLAGS: -lncursesw
     // #include <binding.h>
-    // #include <curses.h>
+    // #include <ncurses.h>
     "C"
     "fmt"
     "unsafe"
@@ -35,15 +35,18 @@ type Window struct {
     chandle unsafe.Pointer
     max Size
     begin Position
-    cursor Position
+    Cursor Position
     // Set to true, if you want to automatically refresh the window after it recieved a command
     AutoRefresh bool
     AutoCursor bool
+    AutoEcho bool
+    lastColor string
     inputBuffer []byte
     // Controls maximum character count for reads. This controls the n parameter of ncurses wgetnstr function.
     //
     // See: http://manpages.org/getstr/3
     IBufSize int
+    panelList map[string]Panel
 }
 
 // Creates a new window. Make sure the windows do not overlap.
@@ -60,19 +63,22 @@ func NewWindow(name string, begin Position, end Size) (*Window, error) {
         name:name,
         begin:begin,
         max:end,
-        cursor:Position{0,0},
+        Cursor:Position{0,0},
         AutoRefresh:false,
+        AutoEcho:false,
+        lastColor: "std",
+        AutoCursor:false,
         IBufSize:255,
     }
-    w.chandle = unsafe.Pointer(C.newwin(C.int(end.Y),C.int(end.X),C.int(begin.Y),C.int(begin.X)))   
-    C.syncok(winst(w.chandle),true)
+    w.chandle = unsafe.Pointer(C.newwin(C.int(begin.Y) + C.int(end.Y),C.int(begin.X) + C.int(end.X),C.int(begin.Y),C.int(begin.X)))
+    w.GetMaxYX()
     wins.append(w)
     return w,nil
 }
 
 // Implementation of the Stringer Interface for type Window
 func (w *Window) String() string { // Implements interface Stringer {
-    return fmt.Sprintf("%T{%s %s}", w,w.max,w.cursor)
+    return fmt.Sprintf("%T{%s %s}", w,w.max,w.Cursor)
 }
 
 // Implementation of the Stringer Interface for type Position
@@ -111,8 +117,27 @@ func (w *Window) GetName() string {
 
 // Retrieves one Rune from user.
 func (w *Window) Getch() rune {
-    ret := C.wgetch((*C.struct__win_st)(w.chandle));
-    return rune(ret)
+    if w.AutoEcho {
+        SetEcho(true)
+    }
+    if w.AutoCursor {
+        SetCursor(CURSOR_VISIBLE)
+    }
+    com := Command{
+        Name: GETCH,
+        Scope: LOCAL,
+        Window: w,
+        Value: make(chan rune),
+    }
+    w.sendCommand(com,false)
+    ret := <-com.Value.(chan rune)
+    if w.AutoEcho {
+        SetEcho(false)
+    }
+    if w.AutoCursor {
+        SetCursor(CURSOR_HIDDEN)
+    }
+    return ret
 }
 
 // Moves the the cursor relative to the beginning of w *Window.
@@ -123,6 +148,7 @@ func (w *Window) Move(y,x uint16) {
         Value: Position{x,y},
         Scope: LOCAL,
     }
+    w.Cursor = Position{x,y}
     w.sendCommand(com,w.AutoRefresh)
 }
 
@@ -193,4 +219,37 @@ func (w *Window) Clear() {
         Scope: LOCAL,
     }
     w.sendCommand(com,w.AutoRefresh)
+}
+
+func (w *Window) Erase() {
+    com := Command{
+        Name: ERASE,
+        Window: w,
+        Scope: LOCAL,
+    }
+    w.sendCommand(com,w.AutoRefresh)
+}
+
+func (w *Window) GetLastColumn() uint16 {
+    return w.max.X-1
+}
+
+func(w *Window) GetLastLine() uint16 {
+    return w.max.Y-1
+}
+
+func (w *Window) DrawBG(bg string,p Position, s Size) {
+    bx,by := p.X,p.Y
+    ex,ey := p.X+s.X,p.Y+s.Y
+    colorBefore := w.GetLastColor()
+    w.SetColor(bg)
+    for Y := by; Y < ey; Y++ {
+        str := make([]byte,0,255)
+        for X := bx; X < ex; X++ {
+            str = append(str,' ')
+        }
+        w.Move(Y,bx)
+        w.Write(str)
+    }
+    w.SetColor(colorBefore)
 }

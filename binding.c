@@ -35,8 +35,8 @@ void bind_waddstr(WINDOW *win, char* str) {
     free(str);
 }
 
-void bind_color_set(short pair) {
-    color_set(pair,0);
+void bind_color_set(WINDOW* win, short pair) {
+    wcolor_set(win,pair,0);
 }
 
 void bind_wbkgd(WINDOW *win, short pairId) {
@@ -50,6 +50,6 @@ int bind_wgetnstr(WINDOW *win, int max, char** str) {
     return (int) strlen(buf);
 }
 
-int* bind_alloc_int() {
-    return malloc(sizeof(int));
+int bind_fkey(int i) {
+    return KEY_F(i);
 }

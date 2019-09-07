@@ -4,7 +4,7 @@
 package ncurses
 
 import (
-	// #include <curses.h>
+	// #include <ncurses.h>
 	"C"
 	"fmt"
 	"io"
@@ -48,8 +48,9 @@ func (a Attribute) String() string {
 	case AttrReversed:
 		return "AttrReversed"
 	default:
-		return fmt.Sprintf("Unkown (%x)",a)
+		return fmt.Sprintf("Unkown (0x%x)",int(a))
 	}
+	return ""
 }
 
 // Sets char attributes for following output in Window w.
@@ -90,8 +91,9 @@ func (st attrParserState) String() string {
 		return "A_STATE_ESCAPE"
 	case A_STATE_FORMAT_FLAG:
 		return "A_STATE_FORMAT_FLAG"
+	default:
+		return fmt.Sprintf("Unkwown (0x%x)",int(st))
 	}
-	return ""
 }
 type modList []rune
 func (m modList) contains(r rune) bool {
